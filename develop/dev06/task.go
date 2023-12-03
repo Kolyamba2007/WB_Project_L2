@@ -2,43 +2,56 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 )
 
 func main() {
-	// He was extraordinarily particular\nabout6politeness6in6others
+	strSlice := make([]string, 0)
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		scanner.Scan()
+		text := scanner.Text()
+		if len(text) != 0 {
+			strSlice = append(strSlice, text)
+		} else {
+			break
+		}
+	}
 
-	reader := bufio.NewReader(os.Stdin)
-	str, err := reader.ReadString('/')
+	result, err := Mancut(&strSlice, []int{1, 4}, "!", true)
 	if err != nil {
 		panic(err)
 	}
 
-	str, _ = strings.CutSuffix(str, "/")
-	fmt.Println(str)
-
-	//result := Mancut(&line, []int{2, 4}, " ", false) //ошибка колонка меньше 1
-	//fmt.Println(result)
+	for _, v := range result {
+		fmt.Println(v)
+	}
 }
 
-func Mancut(line *string, fields []int, delimiter string, separated bool) (result []string) {
-	strings1 := strings.Split(*line, "\n")
-	fmt.Println(strings1)
+func Mancut(line *[]string, fields []int, delimiter string, separated bool) (result []string, err error) {
+	for _, f := range fields {
+		if f < 1 {
+			return nil, errors.New("один из индексов меньше 1")
+		}
+	}
 
-	for _, str := range strings1 {
+	for _, str := range *line {
 		if strings.Contains(str, delimiter) {
-			tempStringSlice := strings.Split(str, delimiter)
+			tempStrSlice1 := strings.Split(str, delimiter)
 
-			var tempString string
+			var tempStrSlice2 []string
 			for _, field := range fields {
-				if len(tempStringSlice) >= field {
-					tempString += tempStringSlice[field-1]
+				if len(tempStrSlice1) >= field {
+					tempStrSlice2 = append(tempStrSlice2, tempStrSlice1[field-1])
 				}
 			}
 
-			result = append(result, tempString)
+			if len(tempStrSlice2) > 0 {
+				result = append(result, strings.Join(tempStrSlice2, " "))
+			}
 		} else if !separated {
 			result = append(result, str)
 		}
